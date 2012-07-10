@@ -3,11 +3,18 @@
   font-family: sans-serif
 }
 
-tr.borrowed
+
+body
 {
-  background-color: red !important;
+ margin: 0px; 
 }
 
+
+
+#actions
+{
+ margin: 8px; 
+}
 .ui-widget 
 {
   
@@ -23,11 +30,54 @@ table
 .column
 {
   float: left; 
+
 }
 
 .clear
 {
   clear: both; 
+}
+
+#order th
+{
+ text-align: left; 
+}
+
+#order .ui-widget-header p
+{
+  margin: 4px 4px 4px 4px;
+}
+
+#order .closeButton
+{
+ position: absolute;
+right: .3em;
+top: 50%;
+width: 19px;
+margin: -10px 0 0 0;
+padding: 1px;
+height: 18px; 
+}
+#articleTable tr
+{
+ height: 32px; 
+}
+
+#articleTable tr.borrowed
+{
+  background-color: red !important;
+}
+
+#articleTable tr.orderSelected
+{
+  background-color: green !important;
+}
+
+
+#articleTable td.options
+{
+ width: 105px; 
+ text-align: center;
 }
 
 #articleTable .options .addToOrderButton

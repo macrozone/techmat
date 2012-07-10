@@ -23,7 +23,12 @@ html
         
     
     div(class="column")
-      div(id="order")
+      div(id="order", class="ui-widget")
+        div(class="ui-widget-header") 
+          p Auftrag
+          a(class="closeButton ui-dialog-titlebar-close ui-corner-all" role="button)
+            span(class="ui-icon ui-icon-closethick") close
+        div(class="ui-widget-content") 
     div(class="column")
       p right column
     div(class="clear")
@@ -35,22 +40,22 @@ html
           tr
             td Name: 
             td
-              input(type="text", name="name")
+              input(type="text", name="name", placeholder="Name")
           
           tr 
             td Geheim-Nr:
             td 
-              input(type="text", name="ext_id")
+              input(type="text", name="ext_id", placeholder="Geheim-Nr")
           
           tr 
             td SAP-Nr:
             td
-              input(type="text", name="sap")
+              input(type="text", name="sap", placeholder="SAP")
           
            
           tr 
             td 
-              input(type="submit")
+              input(type="submit", value="Speichern")
     
     div(id="errorDialog")
       An error occured

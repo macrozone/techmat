@@ -26,6 +26,11 @@ $(document).ready(function() {
       addArticleToOrder: function(orderID, articleID,  callback)
       {
         socket.emit("order add article", {orderID: orderID, articleID: articleID}, callback);
+      },
+      
+      removeArticleFromOrder: function(orderID, articleID,  callback)
+      {
+        socket.emit("order remove article", {orderID: orderID, articleID: articleID}, callback);
       }
     };
     
@@ -59,12 +64,18 @@ $(document).ready(function() {
     
     
     
+    $(window).scroll(function(){
+        $("#order")
+        .stop()
+        .animate({"marginTop": ($(window).scrollTop() + 30) + "px"}, "fast");
+    });
+    
     
     
     function initDialogs()
     {
-      $("#errorDialog").dialog({ modal: true,autoOpen: false }); 
-      $( "#addNewArticleDialog" ).dialog({ modal: true, autoOpen: false }); 
+      $("#errorDialog").dialog({ title: "Error", modal: true,autoOpen: false }); 
+      $( "#addNewArticleDialog" ).dialog({ title: "Neuer Artikel hinzufügen", modal: true, autoOpen: false }); 
     }
     
     function showErrorDialog()
@@ -117,7 +128,7 @@ $(document).ready(function() {
       var $header = $("<tr />").appendTo($("<thead />").appendTo($table));
       var headers = 
       [
-        "ID", "Name", "Geheim-NR", "SAP", "Auftragsnummer", "Optionen"
+        "ID", "Name", "Geheim-Nr", "SAP", "Ausleih-nr", "Optionen"
       ];
       
       $.each(headers, function(index, header)
@@ -153,6 +164,11 @@ $(document).ready(function() {
         if(rowData.order_fk !=null)
         {
           $(cell).parent().addClass("borrowed");
+          if(rowData.order_fk == currentOrderID)
+          {
+            $(cell).parent().addClass("orderSelected");
+            
+          }
         }
       }
       
@@ -162,7 +178,7 @@ $(document).ready(function() {
         if(rowData.order_fk !=null)
         {
           // is borrowed
-          var $button = $('<a class="showOrderButton">Auftrag anzeigen</a>');
+          var $button = $('<a class="showOrderButton">Anzeigen</a>');
           
           $button.button();
           $(cell).append($button);
@@ -176,7 +192,7 @@ $(document).ready(function() {
         {
           // is not borrowed
           
-          var $createNewOrderButton = $('<a class="newOrderButton">Neuer Auftrag</a>');
+          var $createNewOrderButton = $('<a class="newOrderButton">Verleihen</a>');
           
           $createNewOrderButton.button();
           $(cell).append($createNewOrderButton);
@@ -185,7 +201,7 @@ $(document).ready(function() {
               showNewOrderForm({articleID: rowData.id});
             });
           
-          var $addToOrderButton = $('<a class="addToOrderButton">hinzufügen --></a>');
+          var $addToOrderButton = $('<a class="addToOrderButton">hinzufügen ►</a>');
           
           $addToOrderButton.button();
           $(cell).append($addToOrderButton);
@@ -214,7 +230,11 @@ $(document).ready(function() {
         {
           $("body").addClass("editingOrder");
           currentOrderID = orderID;
-          var $order = $("#order");
+          refreshArticleTable();
+          var $orderBox = $("#order").show();
+          var $order = $orderBox.find(".ui-widget-content");
+          
+          
           $order.empty().show();
           
           var $closeButton = $("<a>close</a>").button().click(function()
@@ -227,7 +247,7 @@ $(document).ready(function() {
           
           $order.append($closeButton);
           var $table = $('<table/>').appendTo($order);
-          
+          $table.append("<tr><th>Zeit: </th><td>"+data.itime+"</td></tr>");
           $table.append("<tr><th>Einheit: </th><td>"+data.borrower+"</td></tr>");
           
           $table.append("<tr><th>Lieferant: </th><td>"+data.lender+"</td></tr>");
@@ -235,8 +255,20 @@ $(document).ready(function() {
           
           $.each(data.articles, function(index, article)
             {
-              $table.append("<tr><td>"+article.id+"</th><th>"+article.name+"</th><th>"+article.ext_id+"</th><th>"+article.sap+"</th></tr>");
+              var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+article.ext_id+"</td><td>"+article.sap+"</td><td><a class='takeBackButton'>Zurücknehmen</a></td></tr>");
+              $row.data("article", article);
+              $row.appendTo($table);
+            });
+          
+          $table.find(".takeBackButton").button().click(function()
+            {
               
+                 var article = $(this).parentsUntil("tr").parent().data("article");
+                 
+             removeArticleFromOrder(orderID, article.id, function(error, result)
+               {
+                 console.log(error, result);
+               });
             });
           
           
@@ -249,6 +281,7 @@ $(document).ready(function() {
       dataService.createEmptyOrder(function(error, result)
         {
           currentOrderID = result.insertId;
+          refreshArticleTable();
           
           
           
@@ -278,13 +311,14 @@ $(document).ready(function() {
       var $form = $("#order").hide();
       $("body").removeClass("editingOrder");
       currentOrderID = null;
+      refreshArticleTable();
       
       
       
       
     }
     
-    
+  
     
     function refreshArticleTable()
     {
@@ -294,6 +328,17 @@ $(document).ready(function() {
     function addArticleToOrder(orderID, articleID, callback)
     {
       dataService.addArticleToOrder(orderID, articleID, function(error, result)
+        {
+          
+          refreshArticleTable();
+          showOrder(orderID);
+          callback(error, result);
+        });
+    }
+    
+    function removeArticleFromOrder(orderID, articleID, callback)
+    {
+      dataService.removeArticleFromOrder(orderID, articleID, function(error, result)
         {
           
           refreshArticleTable();

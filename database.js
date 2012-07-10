@@ -93,6 +93,14 @@ function addArticleToOrder(orderID, articleID, callback)
   connection.query("UPDATE article SET order_fk=? WHERE id=? AND order_fk IS NULL", [orderID, articleID], callback);
 }
 
+
+function removeArticleFromOrder(orderID, articleID, callback)
+{
+  connection.query("UPDATE article SET order_fk=NULL WHERE id=? AND order_fk=?", [articleID,orderID], callback);
+}
+
+
+
 function sanitize(rawData, fields)
 {
   var data = {};
@@ -125,3 +133,8 @@ module.exports.addArticle = addArticle;
 module.exports.getOrder = getOrder;
 module.exports.createEmptyOrder = createEmptyOrder;
 module.exports.addArticleToOrder = addArticleToOrder;
+module.exports.removeArticleFromOrder = removeArticleFromOrder;
+
+
+
+

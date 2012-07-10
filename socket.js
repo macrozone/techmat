@@ -10,10 +10,8 @@ module.exports = function(server)
       
       
       socket.on("order get", function(orderID, callback)
-        {
-          
+        {       
           database.getOrder(orderID,callback);
-          
         });
       
       socket.on("article add", function(data, callback)
@@ -34,6 +32,20 @@ module.exports = function(server)
           if(data && data.orderID && data.articleID)
           {
             database.addArticleToOrder(data.orderID, data.articleID, callback);
+            socket.broadcast.emit("article changed", {articleID: data.articleID});
+            socket.broadcast.emit("order changed", {orderID: data.orderID});
+          }
+          else
+          {
+            callback("error", null); 
+          }
+        });
+      
+        socket.on("order remove article", function(data, callback)
+        {
+          if(data && data.orderID && data.articleID)
+          {
+            database.removeArticleFromOrder(data.orderID, data.articleID, callback);
             socket.broadcast.emit("article changed", {articleID: data.articleID});
             socket.broadcast.emit("order changed", {orderID: data.orderID});
           }
