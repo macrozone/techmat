@@ -1,0 +1,52 @@
+
+*{
+  font-family: sans-serif
+}
+
+tr.borrowed
+{
+  background-color: red !important;
+}
+
+.ui-widget 
+{
+  
+  font-family: sans-serif; 
+  font-size: 12px; 
+}
+
+table
+{
+  font-size: 12px; 
+}
+
+.column
+{
+  float: left; 
+}
+
+.clear
+{
+  clear: both; 
+}
+
+#articleTable .options .addToOrderButton
+{
+ display: none; 
+}
+
+body.editingOrder #articleTable .options .addToOrderButton
+{
+ display: block; 
+}
+
+body.editingOrder #articleTable .options .newOrderButton
+{
+ display: none; 
+}
+
+body.editingOrder #articleTable .options .showOrderButton
+{
+ display: none; 
+}
+
