@@ -41,7 +41,7 @@ module.exports = function(server)
           }
         });
       
-        socket.on("order remove article", function(data, callback)
+      socket.on("order remove article", function(data, callback)
         {
           if(data && data.orderID && data.articleID)
           {
@@ -53,6 +53,12 @@ module.exports = function(server)
           {
             callback("error", null); 
           }
+        });
+      
+      socket.on("order update", function(data, callback)
+        {
+          database.updateOrder(data.orderID, data.fields, callback);
+          socket.broadcast.emit("order changed", {orderID: data.orderID});
         });
       
   });

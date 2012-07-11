@@ -11,21 +11,14 @@ connection.connect(function(err) {
 });
 
 
-function testData(callback)
-{
-  
-  connection.query('SHOW TABLE STATUS',callback);
-  
-}
 
-
-function allArticles(callback)
+module.exports.allArticles = function(callback)
 {
   connection.query('SELECT * FROM article',callback);
 }
 
 
-function addArticle(article, callback)
+module.exports.addArticle = function(article, callback)
 {
   var fields = 
   [
@@ -53,7 +46,7 @@ function getArticlesByOrder(orderID, callback)
   connection.query('SELECT * FROM `article` WHERE order_fk=?', orderID, callback);
 }
 
-function getOrder(orderID, callback)
+module.exports.getOrder = function(orderID, callback)
 {
   
   connection.query('SELECT * FROM `order` WHERE id=?', orderID, function(error, result)
@@ -83,20 +76,26 @@ function getOrder(orderID, callback)
     });
 }
 
-function createEmptyOrder(callback)
+module.exports.createEmptyOrder = function(callback)
 {
   connection.query("INSERT INTO `order` VALUES ()", callback);
 }
 
-function addArticleToOrder(orderID, articleID, callback)
+module.exports.addArticleToOrder = function(orderID, articleID, callback)
 {
   connection.query("UPDATE article SET order_fk=? WHERE id=? AND order_fk IS NULL", [orderID, articleID], callback);
 }
 
 
-function removeArticleFromOrder(orderID, articleID, callback)
+module.exports.removeArticleFromOrder = function(orderID, articleID, callback)
 {
   connection.query("UPDATE article SET order_fk=NULL WHERE id=? AND order_fk=?", [articleID,orderID], callback);
+}
+
+module.exports.updateOrder = function(orderID, fields, callback)
+{
+  connection.query("UPDATE `order` SET ? WHERE id=?", [fields,orderID], callback);
+  
 }
 
 
@@ -123,17 +122,6 @@ function sanitize(rawData, fields)
 
 
 
-
-
-
-
-module.exports.testData = testData;
-module.exports.allArticles = allArticles;
-module.exports.addArticle = addArticle;
-module.exports.getOrder = getOrder;
-module.exports.createEmptyOrder = createEmptyOrder;
-module.exports.addArticleToOrder = addArticleToOrder;
-module.exports.removeArticleFromOrder = removeArticleFromOrder;
 
 
 

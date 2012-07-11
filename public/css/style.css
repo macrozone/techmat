@@ -38,25 +38,36 @@ table
   clear: both; 
 }
 
+#order
+{
+  display: none;
+  margin-left: 8px;
+ min-width: 328px; 
+}
+
+#order .ui-widget-content
+{
+ padding: 8px; 
+}
+
 #order th
 {
  text-align: left; 
 }
 
-#order .ui-widget-header p
+#order .ui-widget-header 
 {
-  margin: 4px 4px 4px 4px;
+  padding: 4px 4px 4px 4px;
+}
+
+#order table
+{
+ width: 100%; 
 }
 
 #order .closeButton
 {
- position: absolute;
-right: .3em;
-top: 50%;
-width: 19px;
-margin: -10px 0 0 0;
-padding: 1px;
-height: 18px; 
+float: right;
 }
 #articleTable tr
 {

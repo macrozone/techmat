@@ -31,6 +31,11 @@ $(document).ready(function() {
       removeArticleFromOrder: function(orderID, articleID,  callback)
       {
         socket.emit("order remove article", {orderID: orderID, articleID: articleID}, callback);
+      },
+      
+      updateOrder: function(orderID, fields, callback)
+      {
+       socket.emit("order update", {orderID: orderID, fields: fields}, callback); 
       }
     };
     
@@ -235,9 +240,12 @@ $(document).ready(function() {
           var $order = $orderBox.find(".ui-widget-content");
           
           
+          
           $order.empty().show();
           
-          var $closeButton = $("<a>close</a>").button().click(function()
+          var $closeButton = $orderBox.find(".closeButton");
+          
+          $closeButton.button().click(function()
             {
               closeOrder();
             });
@@ -245,20 +253,37 @@ $(document).ready(function() {
           
           $order.append("<p>ID: "+orderID);
           
-          $order.append($closeButton);
+
           var $table = $('<table/>').appendTo($order);
           $table.append("<tr><th>Zeit: </th><td>"+data.itime+"</td></tr>");
-          $table.append("<tr><th>Einheit: </th><td>"+data.borrower+"</td></tr>");
           
-          $table.append("<tr><th>Lieferant: </th><td>"+data.lender+"</td></tr>");
-          $table.append("<tr><th>ID</th><th>Name</th><th>Geheim-Nr.</th><th>SAP</th></tr>");
+          var fields = {
+            borrower: "Wer nimmts? - Person",
+            borrower_unit: "Wer nimmts? - Einheit",
+            lender: "Verleiher - Person",
+            lender_unit: "Verleiher - Einheit"
+          };
           
+          
+          $.each(fields, function(key, label)
+            {
+              $input = $('<input type="text" name="'+key+'" value="'+data[key]+'" />').keyup({orderID: orderID},onChangeOrderProperty);
+               $table.append($("<tr><th>"+label+": </th></tr>").append($("<td />").append($input)));
+            });
+          
+        
+         $table = $('<table class="articleTable"/>').appendTo($order);
+          $table.append("<thead><tr><th>ID</th><th>Name</th><th>Geheim-Nr.</th><th>SAP</th></tr></thead>");
+          
+          var $tableBody = $("<tbody />").appendTo($table);
           $.each(data.articles, function(index, article)
             {
               var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+article.ext_id+"</td><td>"+article.sap+"</td><td><a class='takeBackButton'>Zurücknehmen</a></td></tr>");
               $row.data("article", article);
-              $row.appendTo($table);
+              $row.appendTo($tableBody);
             });
+          
+        
           
           $table.find(".takeBackButton").button().click(function()
             {
@@ -275,6 +300,23 @@ $(document).ready(function() {
           
         });
     }
+    
+    function onChangeOrderProperty(event)
+    {
+      var value = $(this).val();
+      var name = $(this).attr("name");
+      var orderID = event.data.orderID;
+      var data = {};
+      data[name] = value;
+      
+      dataService.updateOrder(orderID, data, function(error, result)
+        {
+          
+        });
+      
+      
+    }
+    
     
     function showNewOrderForm(options)
     {
@@ -308,7 +350,14 @@ $(document).ready(function() {
     
     function closeOrder()
     {
-      var $form = $("#order").hide();
+      var $order = $("#order").hide();
+      var numberOfArticles = $order.find(".articleTable tr").length -1;
+      if(numberOfArticles <= 0)
+      {
+        // no articles left
+        // could delete this order here
+      }
+      
       $("body").removeClass("editingOrder");
       currentOrderID = null;
       refreshArticleTable();
