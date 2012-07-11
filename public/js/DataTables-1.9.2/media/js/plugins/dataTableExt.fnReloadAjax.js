@@ -25,7 +25,7 @@ $.fn.dataTableExt.oApi.fnReloadAjax = function ( oSettings, sNewSource, fnCallba
 		}
 		 
 		oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
-		that.fnDraw();
+		that.fnStandingRedraw();
 		 
 		if ( typeof bStandingRedraw != 'undefined' && bStandingRedraw === true )
 		{

@@ -1,7 +1,6 @@
 var socket = require('socket.io');
-var database = require("./database");
 
-module.exports = function(server)
+module.exports = function(server, database)
 {
   var io = socket.listen(server);
   io.sockets.on('connection', function (socket) { 
@@ -19,7 +18,12 @@ module.exports = function(server)
           database.addArticle(data, callback);
           socket.broadcast.emit("article changed");
         });
-      
+      socket.on("article update", function(data, callback)
+        {
+         database.updateArticle(data.articleID, data.fields, callback); 
+          socket.broadcast.emit("article changed", {articleID: data.articleID});
+           
+        });
       socket.on("order create", function(data, callback)
         {
           database.createEmptyOrder(callback);

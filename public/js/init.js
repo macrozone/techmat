@@ -17,6 +17,11 @@ $(document).ready(function() {
         
       },
       
+      updateArticle: function(articleID, fields, callback)
+      {
+        socket.emit("article update", {articleID: articleID, fields: fields}, callback); 
+      },
+      
       createEmptyOrder: function(callback)
       {
         socket.emit("order create", null, callback);
@@ -35,7 +40,7 @@ $(document).ready(function() {
       
       updateOrder: function(orderID, fields, callback)
       {
-       socket.emit("order update", {orderID: orderID, fields: fields}, callback); 
+        socket.emit("order update", {orderID: orderID, fields: fields}, callback); 
       }
     };
     
@@ -133,7 +138,7 @@ $(document).ready(function() {
       var $header = $("<tr />").appendTo($("<thead />").appendTo($table));
       var headers = 
       [
-        "ID", "Name", "Geheim-Nr", "SAP", "Ausleih-nr", "Optionen"
+        "ID", "SAP", "Name", "Geheim-Nr","Ort", "Bemerk.", "Ausgeliehen", "Optionen"
       ];
       
       $.each(headers, function(index, header)
@@ -142,26 +147,93 @@ $(document).ready(function() {
         });
       
       
+      var columns = [
+        { "mDataProp": "id"},
+        { "mDataProp": "sap" , "fnCreatedCell": onCreateEditCell },
+        { "mDataProp": "name" , "fnCreatedCell": onCreateEditCell },
+        { "mDataProp": "ext_id" , "fnCreatedCell": onCreateEditCell },
+        { "mDataProp": "location" , "fnCreatedCell": onCreateEditCell },
+        { "mDataProp": "notes" , "fnCreatedCell": onCreateEditCell },
+        
+        { "mDataProp": "order_fk",
+        "fnCreatedCell": onCreateOrderCell},
+        { "mDataProp": null, 
+          
+          "fnCreatedCell": onCreateOptionCell,
+        "sClass": "options"}
+        
+        
+        
+      ];
+      
       var oTable = $table.dataTable( {
           "bProcessing": true,
           "sAjaxSource": "ajax/articles",
-          "iDisplayLength": 100,
-          "aoColumns": [
-            { "mDataProp": "id" },
-            { "mDataProp": "name" },
-            { "mDataProp": "ext_id" },
-            { "mDataProp": "sap" },
-            { "mDataProp": "order_fk",
-            "fnCreatedCell": onCreateOrderCell},
-            { "mDataProp": null, 
-              
-              "fnCreatedCell": onCreateOptionCell,
-            "sClass": "options"}
-            
-            
-            
-          ]
+          "iDisplayLength": 50,
+          "aoColumns": columns
       } );
+      
+      function onCreateEditCell(cell, sData, rowData, iRow, iCol)
+      {
+        $(cell).click(function()
+          {
+            if(!$(cell).hasClass("editing"))
+            {
+              $(cell).addClass("editing");
+              var oldValue = $(cell).text();
+              $(cell).empty();
+              var $input = $('<input type="text" value="'+oldValue+'" />');
+              
+              $(cell).append($input);
+              $input.focus();
+              $input.blur(function()
+                {
+                  var newVal =  $(this).val();
+                  if(newVal != sData)
+                  {
+                    var key = columns[iCol].mDataProp;
+                    console.log(key, newVal);
+                    // save value
+                    
+                    fields = {};
+                    fields[key] = newVal;
+                    dataService.updateArticle(rowData.id, fields, function(error, result)
+                      {
+                        if(!error)
+                        {
+                          // everything went as expected
+                          oTable.fnUpdate(newVal, iRow, iCol);
+                          $(cell).removeClass("editing");
+                          $(cell).empty();
+                          $(cell).text(newVal);
+                        }
+                        else
+                        {
+                          // error
+                          
+                          $input.focus();
+                          
+                        }
+                      });
+                    
+                    
+                  }
+                  else
+                  {
+                    $(cell).removeClass("editing");
+                    $(cell).empty();
+                    $(cell).text(newVal); 
+                  }
+                  
+                });
+              
+              
+            }
+          });
+        
+        
+      }
+      
       
       function onCreateOrderCell(cell, sData, rowData, iRow, iCol)
       {
@@ -175,6 +247,8 @@ $(document).ready(function() {
             
           }
         }
+        
+        
       }
       
       
@@ -245,15 +319,13 @@ $(document).ready(function() {
           
           var $closeButton = $orderBox.find(".closeButton");
           
-          $closeButton.button().click(function()
-            {
-              closeOrder();
-            });
+          $closeButton.unbind("click", closeOrder);
+          $closeButton.button().click(closeOrder);
           
           
           $order.append("<p>ID: "+orderID);
           
-
+          
           var $table = $('<table/>').appendTo($order);
           $table.append("<tr><th>Zeit: </th><td>"+data.itime+"</td></tr>");
           
@@ -268,11 +340,11 @@ $(document).ready(function() {
           $.each(fields, function(key, label)
             {
               $input = $('<input type="text" name="'+key+'" value="'+data[key]+'" />').keyup({orderID: orderID},onChangeOrderProperty);
-               $table.append($("<tr><th>"+label+": </th></tr>").append($("<td />").append($input)));
+              $table.append($("<tr><th>"+label+": </th></tr>").append($("<td />").append($input)));
             });
           
-        
-         $table = $('<table class="articleTable"/>').appendTo($order);
+          
+          $table = $('<table class="articleTable"/>').appendTo($order);
           $table.append("<thead><tr><th>ID</th><th>Name</th><th>Geheim-Nr.</th><th>SAP</th></tr></thead>");
           
           var $tableBody = $("<tbody />").appendTo($table);
@@ -283,17 +355,17 @@ $(document).ready(function() {
               $row.appendTo($tableBody);
             });
           
-        
+          
           
           $table.find(".takeBackButton").button().click(function()
             {
               
-                 var article = $(this).parentsUntil("tr").parent().data("article");
-                 
-             removeArticleFromOrder(orderID, article.id, function(error, result)
-               {
-                 console.log(error, result);
-               });
+              var article = $(this).parentsUntil("tr").parent().data("article");
+              
+              removeArticleFromOrder(orderID, article.id, function(error, result)
+                {
+                  console.log(error, result);
+                });
             });
           
           
@@ -323,7 +395,7 @@ $(document).ready(function() {
       dataService.createEmptyOrder(function(error, result)
         {
           currentOrderID = result.insertId;
-          refreshArticleTable();
+         
           
           
           
@@ -367,10 +439,11 @@ $(document).ready(function() {
       
     }
     
-  
+    
     
     function refreshArticleTable()
     {
+      console.log("refreshing table");
       $("#articleTable").dataTable().fnReloadAjax();
     }
     
@@ -379,7 +452,7 @@ $(document).ready(function() {
       dataService.addArticleToOrder(orderID, articleID, function(error, result)
         {
           
-          refreshArticleTable();
+         
           showOrder(orderID);
           callback(error, result);
         });
@@ -390,7 +463,7 @@ $(document).ready(function() {
       dataService.removeArticleFromOrder(orderID, articleID, function(error, result)
         {
           
-          refreshArticleTable();
+         
           showOrder(orderID);
           callback(error, result);
         });

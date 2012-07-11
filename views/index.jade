@@ -9,6 +9,8 @@ html
     script(type="text/javascript", src="/js/jquery-1.7.2.min.js")  
     script(type="text/javascript", src="/js/jquery-ui-1.8.21.custom.min.js")  
     script(type="text/javascript", src="/js/DataTables-1.9.2/media/js/jquery.dataTables.min.js")
+    script(type="text/javascript", src="/js/DataTables-1.9.2/media/js/plugins/dataTableExt.fnStandingRedraw.js")
+    
     script(type="text/javascript", src="/js/DataTables-1.9.2/media/js/plugins/dataTableExt.fnReloadAjax.js")
     script(type="text/javascript", src="/socket.io/socket.io.js")
     script(type="text/javascript", src="/js/dataService.js")
@@ -45,6 +47,10 @@ html
             td Name: 
             td
               input(type="text", name="name", placeholder="Name")
+          tr 
+            td SAP-Nr:
+            td
+              input(type="text", name="sap", placeholder="SAP")
           
           tr 
             td Geheim-Nr:
@@ -52,9 +58,10 @@ html
               input(type="text", name="ext_id", placeholder="Geheim-Nr")
           
           tr 
-            td SAP-Nr:
-            td
-              input(type="text", name="sap", placeholder="SAP")
+            td Ort:
+            td 
+              input(type="text", name="location", placeholder="Ort")
+           
           
            
           tr 

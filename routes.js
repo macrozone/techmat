@@ -1,6 +1,4 @@
-var database = require("./database");
-
-module.exports = function(app)
+module.exports = function(app, database)
 {
   
   app.get("/", function(req, res)

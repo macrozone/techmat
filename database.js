@@ -1,14 +1,20 @@
-var mysql      = require('mysql');
-var connection = mysql.createConnection({
-    host     : '127.0.0.1 ',
-    user     : 'root',
-    password : 'pamir',
-    database : 'techmat'
-});
 
-connection.connect(function(err) {
-    // connected! (unless `err` is set)
-});
+
+var mysql      = require('mysql');
+var connection;
+
+module.exports.connect = function(settings)
+{
+  connection = mysql.createConnection(settings);
+  
+  
+  connection.connect(function(err) {
+      if(err)
+        console.log(err);
+      else
+        console.log("successfully connected to database");
+  }); 
+}
 
 
 
@@ -22,12 +28,18 @@ module.exports.addArticle = function(article, callback)
 {
   var fields = 
   [
-    'name', 'ext_id', 'sap'
+    'name', 'ext_id', 'sap', 'location', 'notes'
   ];
+ 
   var data = sanitize(article, fields);
-  
+  console.log(data);
   connection.query('INSERT INTO article SET ?',data, callback);
   
+}
+
+module.exports.updateArticle = function(id, fields, callback)
+{
+   connection.query("UPDATE `article` SET ? WHERE id=?", [fields,id], callback);
 }
 
 function getArticle(id, callback)
@@ -110,8 +122,17 @@ function sanitize(rawData, fields)
     {
       if(typeof rawData[field] != 'undefined')
       {
-        data[field] = rawData[field];
+        if(typeof rawData[field] == 'string' && rawData[field].length == 0)
+        {
+          
+          data[field] = null;
+        }
+        else
+        {
+          data[field] = rawData[field];
+        }
       }
+      
     });
   
   return data; 
