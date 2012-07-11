@@ -20,14 +20,13 @@ module.exports = function(server, database)
         });
       socket.on("article update", function(data, callback)
         {
-         database.updateArticle(data.articleID, data.fields, callback); 
+          database.updateArticle(data.articleID, data.fields, callback); 
           socket.broadcast.emit("article changed", {articleID: data.articleID});
-           
+          
         });
       socket.on("order create", function(data, callback)
         {
           database.createEmptyOrder(callback);
-          
           socket.broadcast.emit("order changed");
         });
       
@@ -36,8 +35,9 @@ module.exports = function(server, database)
           if(data && data.orderID && data.articleID)
           {
             database.addArticleToOrder(data.orderID, data.articleID, callback);
-            socket.broadcast.emit("article changed", {articleID: data.articleID});
             socket.broadcast.emit("order changed", {orderID: data.orderID});
+            socket.broadcast.emit("article changed", {articleID: data.articleID});
+            
           }
           else
           {
@@ -50,8 +50,9 @@ module.exports = function(server, database)
           if(data && data.orderID && data.articleID)
           {
             database.removeArticleFromOrder(data.orderID, data.articleID, callback);
-            socket.broadcast.emit("article changed", {articleID: data.articleID});
             socket.broadcast.emit("order changed", {orderID: data.orderID});
+            socket.broadcast.emit("article changed", {articleID: data.articleID});
+            
           }
           else
           {

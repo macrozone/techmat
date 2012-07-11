@@ -42,6 +42,22 @@ module.exports = function(app, database)
         });
     });
   
+  app.get("/ajax/orders", function(req, res)
+    {
+      database.allOrders(function(error, result)
+        {
+          var response = 
+          {
+            status: 0,
+            error: error,
+            aaData: result
+          };
+         
+          
+          res.write(JSON.stringify(response));
+          res.end();
+        });
+    });
   app.get("/ajax/order", function(req, res)
     {
       var orderID = req.query.id;

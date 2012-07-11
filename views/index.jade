@@ -19,10 +19,21 @@ html
 
     
   body
-    div(id="actions")
+   
     div(id="leftColumn", class="column")
-     
-        
+
+      div(id="tabs")
+        div(id="actions")
+        ul 
+          li
+            a(href="#tab-articles") Artikel-Liste
+          li
+            a(href="#tab-orders") Auftragsliste-Liste
+        div(id="tab-articles")
+          table(id="articleTable")
+        div(id="tab-orders")
+          table(id="orderTable")
+          
     
     div(class="column")
       div(id="order", class="ui-widget")
@@ -35,10 +46,9 @@ html
             
         
         
-    div(class="column")
-      p right column
+    
     div(class="clear")
-    p ende
+  
     
     div(id="addNewArticleDialog")
        form(class="addNewArticle")
@@ -69,4 +79,5 @@ html
               input(type="submit", value="Speichern")
     
     div(id="errorDialog")
-      An error occured
+      An error occured:
+      p(class="error")

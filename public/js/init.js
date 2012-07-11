@@ -13,8 +13,6 @@ $(document).ready(function() {
       addArticle: function(data, callback)
       {
         socket.emit("article add", data, callback);
-        
-        
       },
       
       updateArticle: function(articleID, fields, callback)
@@ -24,8 +22,7 @@ $(document).ready(function() {
       
       createEmptyOrder: function(callback)
       {
-        socket.emit("order create", null, callback);
-        
+        socket.emit("order create", null, callback); 
       },
       
       addArticleToOrder: function(orderID, articleID,  callback)
@@ -45,18 +42,25 @@ $(document).ready(function() {
     };
     
     
-    socket.on("article changed", refreshArticleTable);
+    
+    
     socket.on("order changed", function(data)
       {
+        
         
         if(data && data.orderID && currentOrderID == data.orderID)
         {
           // refresh order form
           showOrder(currentOrderID);
         }
+        
+        refreshOrderTable();
       });
     
+    socket.on("article changed", refreshArticleTable);
+    
     initDialogs();
+    $( "#tabs" ).tabs();
     
     
     
@@ -65,8 +69,11 @@ $(document).ready(function() {
     
     
     
-    var $table =  $("<table id='articleTable' />").appendTo($("#leftColumn"));
+    var $table =  $("#articleTable");
     var oTable =  createArticleTable($table);
+    
+    var $orderTable = $("#orderTable");
+    var oOrderTable = createOrderTable($orderTable);
     
     
     var $addNewArticleButton = $("<a>Neuer Artikel erfassen</a>").appendTo($("#actions")).button().click(showAddArticleDialog);
@@ -77,7 +84,7 @@ $(document).ready(function() {
     $(window).scroll(function(){
         $("#order")
         .stop()
-        .animate({"marginTop": ($(window).scrollTop() + 30) + "px"}, "fast");
+        .animate({"marginTop": ($(window).scrollTop() + 10) + "px"}, "fast");
     });
     
     
@@ -88,10 +95,11 @@ $(document).ready(function() {
       $( "#addNewArticleDialog" ).dialog({ title: "Neuer Artikel hinzufügen", modal: true, autoOpen: false }); 
     }
     
-    function showErrorDialog()
+    function showErrorDialog(error)
     {
       
       $( "#errorDialog" ).dialog('open');
+      $( "#errorDialog" ).find(".error").empty().text(JSON.stringify(error));
       
       
     }
@@ -122,7 +130,7 @@ $(document).ready(function() {
             }
             else
             {
-              showErrorDialog(); 
+              showErrorDialog(error); 
             }
           });
         
@@ -138,7 +146,7 @@ $(document).ready(function() {
       var $header = $("<tr />").appendTo($("<thead />").appendTo($table));
       var headers = 
       [
-        "ID", "SAP", "Name", "Geheim-Nr","Ort", "Bemerk.", "Ausgeliehen", "Optionen"
+        "ID", "SAP", "Name", "Geheim-Nr","Ort", "Bemerk.", "Weg?", "Optionen"
       ];
       
       $.each(headers, function(index, header)
@@ -148,17 +156,17 @@ $(document).ready(function() {
       
       
       var columns = [
-        { "mDataProp": "id"},
-        { "mDataProp": "sap" , "fnCreatedCell": onCreateEditCell },
-        { "mDataProp": "name" , "fnCreatedCell": onCreateEditCell },
-        { "mDataProp": "ext_id" , "fnCreatedCell": onCreateEditCell },
-        { "mDataProp": "location" , "fnCreatedCell": onCreateEditCell },
-        { "mDataProp": "notes" , "fnCreatedCell": onCreateEditCell },
+        { "mDataProp": "id", "sWidth": "12px"},
+        { "mDataProp": "sap" , "fnCreatedCell": onCreateEditCell, "sWidth": "30px"},
+        { "mDataProp": "name" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
+        { "mDataProp": "ext_id" , "fnCreatedCell": onCreateEditCell, "sWidth": "70px" },
+        { "mDataProp": "location" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
+        { "mDataProp": "notes" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
         
-        { "mDataProp": "order_fk",
+        { "mDataProp": "order_fk", "sWidth": "32px",
         "fnCreatedCell": onCreateOrderCell},
         { "mDataProp": null, 
-          
+          "sWidth": "51px",
           "fnCreatedCell": onCreateOptionCell,
         "sClass": "options"}
         
@@ -167,6 +175,7 @@ $(document).ready(function() {
       ];
       
       var oTable = $table.dataTable( {
+          "bJQueryUI": true,
           "bProcessing": true,
           "sAjaxSource": "ajax/articles",
           "iDisplayLength": 50,
@@ -302,6 +311,80 @@ $(document).ready(function() {
       return oTable;
     }
     
+    
+    
+    function createOrderTable($table)
+    {
+      
+      
+      var $header = $("<tr />").appendTo($("<thead />").appendTo($table));
+      var headers = 
+      [
+        "ID", "Zeit", "Wer - Person", "Wer - Unit", "Verleiher","Verleih. Einehit", "Anzahl Artikel", "Optionen"
+      ];
+      
+      
+      
+      $.each(headers, function(index, header)
+        {
+          $header.append($("<th>"+header+"</th>"));
+        });
+      
+      
+      var columns = [
+        { "mDataProp": "id", "fnCreatedCell": onCreateIDCell},
+        { "mDataProp": "itime"},
+        
+        { "mDataProp": "borrower"},
+        { "mDataProp": "borrower_unit"},
+        { "mDataProp": "lender"},
+        { "mDataProp": "lender_unit"},
+        { "mDataProp": "number_of_articles"},
+        { "mDataProp": null, 
+          
+          "fnCreatedCell": onCreateOptionCell,
+        "sClass": "options"}
+        
+        
+        
+      ];
+      
+      function onCreateIDCell(cell, sData, rowData, iRow, iCol)
+      {
+       if(sData == currentOrderID)
+          {
+            $(cell).parent().addClass("orderSelected");
+            
+          } 
+      }
+      
+      function onCreateOptionCell(cell, sData, rowData, iRow, iCol)
+      {
+        
+        var $button = $('<a class="showOrderButton">Anzeigen</a>');
+        
+        $button.button();
+        $(cell).append($button);
+        $button.click(function()
+          {
+            showOrder(rowData.id);
+          });
+      }
+      
+      
+      var oTable = $table.dataTable( {
+          "bJQueryUI": true,
+          "bProcessing": true,
+          "sAjaxSource": "ajax/orders",
+          "iDisplayLength": 25,
+          "aoColumns": columns
+      } );
+      
+      return oTable;
+    }
+    
+    
+    
     function showOrder(orderID)
     {
       
@@ -310,6 +393,8 @@ $(document).ready(function() {
           $("body").addClass("editingOrder");
           currentOrderID = orderID;
           refreshArticleTable();
+          refreshOrderTable();
+          
           var $orderBox = $("#order").show();
           var $order = $orderBox.find(".ui-widget-content");
           
@@ -350,7 +435,8 @@ $(document).ready(function() {
           var $tableBody = $("<tbody />").appendTo($table);
           $.each(data.articles, function(index, article)
             {
-              var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+article.ext_id+"</td><td>"+article.sap+"</td><td><a class='takeBackButton'>Zurücknehmen</a></td></tr>");
+              
+              var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+(article.ext_id ? article.ext_id : "")+"</td><td>"+article.sap+"</td><td><a class='takeBackButton'>Zurücknehmen</a></td></tr>");
               $row.data("article", article);
               $row.appendTo($tableBody);
             });
@@ -364,6 +450,7 @@ $(document).ready(function() {
               
               removeArticleFromOrder(orderID, article.id, function(error, result)
                 {
+                  refreshOrderTable();
                   console.log(error, result);
                 });
             });
@@ -384,6 +471,7 @@ $(document).ready(function() {
       dataService.updateOrder(orderID, data, function(error, result)
         {
           
+          refreshOrderTable(); 
         });
       
       
@@ -395,7 +483,7 @@ $(document).ready(function() {
       dataService.createEmptyOrder(function(error, result)
         {
           currentOrderID = result.insertId;
-         
+          refreshOrderTable();
           
           
           
@@ -433,12 +521,17 @@ $(document).ready(function() {
       $("body").removeClass("editingOrder");
       currentOrderID = null;
       refreshArticleTable();
+      refreshOrderTable();
       
       
       
       
     }
-    
+    function refreshOrderTable()
+    {
+      console.log("refreshing order table");
+      $("#orderTable").dataTable().fnReloadAjax();
+    }
     
     
     function refreshArticleTable()
@@ -451,8 +544,8 @@ $(document).ready(function() {
     {
       dataService.addArticleToOrder(orderID, articleID, function(error, result)
         {
+          refreshOrderTable();
           
-         
           showOrder(orderID);
           callback(error, result);
         });
@@ -463,7 +556,7 @@ $(document).ready(function() {
       dataService.removeArticleFromOrder(orderID, articleID, function(error, result)
         {
           
-         
+          
           showOrder(orderID);
           callback(error, result);
         });

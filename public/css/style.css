@@ -6,14 +6,20 @@
 
 body
 {
- margin: 0px; 
+  margin: 0px; 
 }
 
 
+#tabs
+{
+ position: relative; 
+}
 
 #actions
 {
- margin: 8px; 
+ position: absolute;
+ top:5px;
+ right:5px;
 }
 .ui-widget 
 {
@@ -30,7 +36,7 @@ table
 .column
 {
   float: left; 
-
+  
 }
 
 .clear
@@ -38,21 +44,26 @@ table
   clear: both; 
 }
 
+.ui-tabs .ui-tabs-panel
+{
+ padding: 0.8em 0em; 
+}
+
 #order
 {
   display: none;
   margin-left: 8px;
- min-width: 328px; 
+  min-width: 328px; 
 }
 
 #order .ui-widget-content
 {
- padding: 8px; 
+  padding: 8px; 
 }
 
 #order th
 {
- text-align: left; 
+  text-align: left; 
 }
 
 #order .ui-widget-header 
@@ -62,16 +73,33 @@ table
 
 #order table
 {
- width: 100%; 
+  width: 100%; 
 }
 
 #order .closeButton
 {
-float: right;
+  float: right;
+}
+
+#orderTable
+{
+ width: 873px; 
+}
+#articleTable tr td input
+{
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing: border-box;
 }
 #articleTable tr
 {
- height: 32px; 
+  height: 32px; 
+}
+
+#articleTable thead th {
+  padding: 3px 10px 3px 0px;
 }
 
 #articleTable tr.borrowed
@@ -79,7 +107,7 @@ float: right;
   background-color: red !important;
 }
 
-#articleTable tr.orderSelected
+#articleTable tr.orderSelected, #orderTable tr.orderSelected
 {
   background-color: green !important;
 }
@@ -87,27 +115,27 @@ float: right;
 
 #articleTable td.options
 {
- width: 105px; 
- text-align: center;
+  width: 105px; 
+  text-align: center;
 }
 
 #articleTable .options .addToOrderButton
 {
- display: none; 
+  display: none; 
 }
 
 body.editingOrder #articleTable .options .addToOrderButton
 {
- display: block; 
+  display: block; 
 }
 
 body.editingOrder #articleTable .options .newOrderButton
 {
- display: none; 
+  display: none; 
 }
 
 body.editingOrder #articleTable .options .showOrderButton
 {
- display: none; 
+  display: none; 
 }
 

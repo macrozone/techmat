@@ -58,6 +58,10 @@ function getArticlesByOrder(orderID, callback)
   connection.query('SELECT * FROM `article` WHERE order_fk=?', orderID, callback);
 }
 
+module.exports.allOrders = function(callback)
+{
+  connection.query('SELECT o.*, count(a.id) number_of_articles FROM `order` o left join article a on a.order_fk = o.id group by o.id',callback);
+}
 module.exports.getOrder = function(orderID, callback)
 {
   
@@ -87,6 +91,7 @@ module.exports.getOrder = function(orderID, callback)
       }
     });
 }
+
 
 module.exports.createEmptyOrder = function(callback)
 {
