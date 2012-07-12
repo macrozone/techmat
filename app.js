@@ -10,7 +10,7 @@ var app = express();
 // Configuration
 
 app.configure(function(){
-    app.set('port', 80);
+
     app.set("database", "techmat");
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
@@ -28,6 +28,7 @@ app.configure('development', function(){
 });
 
 app.configure('production', function(){
+        app.set('port', 80);
     app.use(express.errorHandler()); 
 });
 

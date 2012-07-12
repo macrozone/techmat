@@ -75,8 +75,11 @@ table
 {
   width: 100%; 
 }
-
-#order .closeButton
+#order .articleTable
+{
+ margin-top: 20px; 
+}
+#order .buttons
 {
   float: right;
 }
@@ -85,6 +88,7 @@ table
 {
  width: 873px; 
 }
+
 #articleTable tr td input
 {
   margin: 0;

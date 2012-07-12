@@ -1,4 +1,15 @@
+"use strict";
 
+/**
+
+sorry for the mess here, i had some memory leaks to fix. 
+
+Be carefull, when adding event handlers to elements that you dont have control and that can be removed or replaced. 
+E.g. the table rows can get hidden by dataTables and so its not easy to remove event handlers there.
+
+Better solution is to use jquery's "on" (formerly "delegate") to bind event handlers.
+jquery will automatically add theses handlers to new nodes
+*/
 
 $(document).ready(function() {
     
@@ -65,18 +76,55 @@ $(document).ready(function() {
     
     
     
+    var articleColumns = [
+      { "mDataProp": "id", "sWidth": "12px"},
+      { "mDataProp": "sap" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "30px"},
+      { "mDataProp": "name" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "140px" },
+      { "mDataProp": "ext_id" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "70px" },
+      { "mDataProp": "location" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "140px" },
+      { "mDataProp": "notes" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "140px" },
+      
+      { "mDataProp": "order_fk", "sWidth": "32px",
+      "fnCreatedCell": onCreateOrderCell},
+      { "mDataProp": null, 
+        "sWidth": "51px",
+        "fnCreatedCell": onCreateOptionCell,
+      "sClass": "options button"}
+      
+      
+      
+    ];
     
     
     
     
     var $table =  $("#articleTable");
-    var oTable =  createArticleTable($table);
+    var oTable =  createArticleTable($table, articleColumns);
+    
+    
+    var orderColumns = [
+      { "mDataProp": "id", "fnCreatedCell": onCreateOrderIDCell},
+      { "mDataProp": "itime"},
+      
+      { "mDataProp": "borrower"},
+      { "mDataProp": "borrower_unit"},
+      { "mDataProp": "lender"},
+      { "mDataProp": "lender_unit"},
+      { "mDataProp": "number_of_articles"},
+      { "mDataProp": null, 
+        
+        "fnCreatedCell": onCreateOrderOptionCell,
+      "sClass": "options"}
+      
+      
+      
+    ];
     
     var $orderTable = $("#orderTable");
-    var oOrderTable = createOrderTable($orderTable);
+    var oOrderTable = createOrderTable($orderTable, orderColumns);
     
     
-    var $addNewArticleButton = $("<a>Neuer Artikel erfassen</a>").appendTo($("#actions")).button().click(showAddArticleDialog);
+    var $addNewArticleButton = $("<a>Neuer Artikel erfassen</a>").appendTo($("#actions")).button().on("click",showAddArticleDialog);
     
     
     
@@ -139,7 +187,7 @@ $(document).ready(function() {
     
     
     
-    function createArticleTable($table)
+    function createArticleTable($table, columns)
     {
       
       
@@ -155,156 +203,128 @@ $(document).ready(function() {
         });
       
       
-      var columns = [
-        { "mDataProp": "id", "sWidth": "12px"},
-        { "mDataProp": "sap" , "fnCreatedCell": onCreateEditCell, "sWidth": "30px"},
-        { "mDataProp": "name" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
-        { "mDataProp": "ext_id" , "fnCreatedCell": onCreateEditCell, "sWidth": "70px" },
-        { "mDataProp": "location" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
-        { "mDataProp": "notes" , "fnCreatedCell": onCreateEditCell, "sWidth": "140px" },
-        
-        { "mDataProp": "order_fk", "sWidth": "32px",
-        "fnCreatedCell": onCreateOrderCell},
-        { "mDataProp": null, 
-          "sWidth": "51px",
-          "fnCreatedCell": onCreateOptionCell,
-        "sClass": "options"}
-        
-        
-        
-      ];
       
       var oTable = $table.dataTable( {
           "bJQueryUI": true,
           "bProcessing": true,
           "sAjaxSource": "ajax/articles",
-          "iDisplayLength": 50,
-          "aoColumns": columns
-      } );
-      
-      function onCreateEditCell(cell, sData, rowData, iRow, iCol)
-      {
-        $(cell).click(function()
+          "iDisplayLength": 25,
+          "aoColumns": columns,
+          "fnDrawCallback": function onDraw()
           {
-            if(!$(cell).hasClass("editing"))
-            {
-              $(cell).addClass("editing");
-              var oldValue = $(cell).text();
-              $(cell).empty();
-              var $input = $('<input type="text" value="'+oldValue+'" />');
-              
-              $(cell).append($input);
-              $input.focus();
-              $input.blur(function()
+            $("#articleTable").off("click");
+            $("#articleTable .showOrderButton").button();
+            $("#articleTable").on("click", ".showOrderButton", function()
+              {
+                var node = $(this).parentsUntil("tr").parent().get(0);
+                var rowData = oTable.fnGetData(node);
+                showOrder(rowData.order_fk);
+              });
+            
+            $("#articleTable .newOrderButton").button();
+            $("#articleTable").on("click", ".newOrderButton", function()
+              {
+                var node = $(this).parentsUntil("tr").parent().get(0);
+                var rowData = oTable.fnGetData(node);
+                
+                showNewOrderForm({articleID: rowData.id});
+                
+                
+              });
+            
+            
+            $("#articleTable .addToOrderButton").button();
+            $("#articleTable").on("click", ".addToOrderButton", function()
+              {
+                var node = $(this).parentsUntil("tr").parent().get(0);
+                var rowData = oTable.fnGetData(node);
+                
+                addArticleToOrder(currentOrderID, rowData.id, function(response)
+                  {
+                    
+                  });
+                
+                
+              });
+            
+            
+            
+            $("#articleTable").on("click", "td.editable",   function onEditCellClick()
+              {
+                
+                var node = $(this).parent().get(0);
+                var cell = this;
+                var $cell = $(this);
+                if(!$cell.hasClass("editing"))
                 {
-                  var newVal =  $(this).val();
-                  if(newVal != sData)
-                  {
-                    var key = columns[iCol].mDataProp;
-                    console.log(key, newVal);
-                    // save value
-                    
-                    fields = {};
-                    fields[key] = newVal;
-                    dataService.updateArticle(rowData.id, fields, function(error, result)
-                      {
-                        if(!error)
-                        {
-                          // everything went as expected
-                          oTable.fnUpdate(newVal, iRow, iCol);
-                          $(cell).removeClass("editing");
-                          $(cell).empty();
-                          $(cell).text(newVal);
-                        }
-                        else
-                        {
-                          // error
-                          
-                          $input.focus();
-                          
-                        }
-                      });
-                    
-                    
-                  }
-                  else
-                  {
-                    $(cell).removeClass("editing");
-                    $(cell).empty();
-                    $(cell).text(newVal); 
-                  }
+                  $cell.addClass("editing");
+                  var oldValue = $cell.text();
+                  $cell.empty();
+                  var $input = $('<input type="text" value="'+oldValue+'" />');
                   
-                });
-              
-              
-            }
-          });
-        
-        
-      }
-      
-      
-      function onCreateOrderCell(cell, sData, rowData, iRow, iCol)
-      {
-        
-        if(rowData.order_fk !=null)
-        {
-          $(cell).parent().addClass("borrowed");
-          if(rowData.order_fk == currentOrderID)
-          {
-            $(cell).parent().addClass("orderSelected");
+                  $cell.append($input);
+                  $input.focus();
+                  $input.on("blur",function()
+                    {
+                      var newVal =  $(this).val();
+                      if(newVal != oldValue)
+                      {
+                        var rowData = oTable.fnGetData(node);
+                        
+                        var pos = oTable.fnGetPosition(cell);
+                        var key = articleColumns[pos[1]].mDataProp;
+                        
+                        // save value
+                        
+                        var fields = {};
+                        console.log(key);
+                        fields[key] = newVal;
+                        console.log(fields);
+                        dataService.updateArticle(rowData.id, fields, function(error, result)
+                          {
+                            
+                            if(!error)
+                            {
+                              // everything went as expected
+                              //oTable.fnUpdate(newVal, iRow, iCol);
+                              $input.off("blur");
+                              $cell.removeClass("editing");
+                              $cell.empty();
+                              
+                              $cell.text(newVal);
+                            }
+                            else
+                            {
+                              // error
+                              showErrorDialog(error);
+                              $input.focus();
+                              
+                            }
+                          });
+                        
+                        
+                      }
+                      else
+                      {
+                        $input.off("blur");
+                        $cell.removeClass("editing");
+                        $cell.empty();
+                        $cell.text(newVal); 
+                      }
+                      
+                    });
+                  
+                  
+                }
+                
+              });
+            
+            
+            
             
           }
-        }
-        
-        
-      }
+      } );
       
-      
-      function onCreateOptionCell(cell, sData, rowData, iRow, iCol)
-      {
-        if(rowData.order_fk !=null)
-        {
-          // is borrowed
-          var $button = $('<a class="showOrderButton">Anzeigen</a>');
-          
-          $button.button();
-          $(cell).append($button);
-          $button.click(function()
-            {
-              showOrder(rowData.order_fk);
-            });
-        }
-        
-        else
-        {
-          // is not borrowed
-          
-          var $createNewOrderButton = $('<a class="newOrderButton">Verleihen</a>');
-          
-          $createNewOrderButton.button();
-          $(cell).append($createNewOrderButton);
-          $createNewOrderButton.click(function()
-            {
-              showNewOrderForm({articleID: rowData.id});
-            });
-          
-          var $addToOrderButton = $('<a class="addToOrderButton">hinzufügen ►</a>');
-          
-          $addToOrderButton.button();
-          $(cell).append($addToOrderButton);
-          $addToOrderButton.click(function()
-            {
-              addArticleToOrder(currentOrderID, rowData.id, function(response)
-                {
-                  
-                });
-            });
-          
-          
-        }
-        
-      }
       
       
       
@@ -313,7 +333,61 @@ $(document).ready(function() {
     
     
     
-    function createOrderTable($table)
+    
+    
+    
+    function onCreateOrderCell(cell, sData, rowData, iRow, iCol)
+    {
+      
+      if(rowData.order_fk !=null)
+      {
+        $(cell).parent().addClass("borrowed");
+        if(rowData.order_fk == currentOrderID)
+        {
+          $(cell).parent().addClass("orderSelected");
+          
+        }
+      }
+      
+      
+    }
+    
+    
+    function onCreateOptionCell(cell, sData, rowData, iRow, iCol)
+    {
+      
+      
+      
+      if(rowData.order_fk !=null)
+      {
+        // is borrowed
+        var $button = $('<a class="showOrderButton">Anzeigen</a>');
+        $(cell).append($button);
+        
+      }
+      
+      else
+      {
+        // is not borrowed
+        
+        var $createNewOrderButton = $('<a class="newOrderButton">Verleihen</a>');
+        
+        
+        $(cell).append($createNewOrderButton);
+        
+        var $addToOrderButton = $('<a class="addToOrderButton">hinzufügen ►</a>');
+         $(cell).append($addToOrderButton);
+        
+        
+        
+      }
+      
+    }
+    
+    
+    
+    
+    function createOrderTable($table, columns)
     {
       
       
@@ -331,45 +405,8 @@ $(document).ready(function() {
         });
       
       
-      var columns = [
-        { "mDataProp": "id", "fnCreatedCell": onCreateIDCell},
-        { "mDataProp": "itime"},
-        
-        { "mDataProp": "borrower"},
-        { "mDataProp": "borrower_unit"},
-        { "mDataProp": "lender"},
-        { "mDataProp": "lender_unit"},
-        { "mDataProp": "number_of_articles"},
-        { "mDataProp": null, 
-          
-          "fnCreatedCell": onCreateOptionCell,
-        "sClass": "options"}
-        
-        
-        
-      ];
       
-      function onCreateIDCell(cell, sData, rowData, iRow, iCol)
-      {
-       if(sData == currentOrderID)
-          {
-            $(cell).parent().addClass("orderSelected");
-            
-          } 
-      }
       
-      function onCreateOptionCell(cell, sData, rowData, iRow, iCol)
-      {
-        
-        var $button = $('<a class="showOrderButton">Anzeigen</a>');
-        
-        $button.button();
-        $(cell).append($button);
-        $button.click(function()
-          {
-            showOrder(rowData.id);
-          });
-      }
       
       
       var oTable = $table.dataTable( {
@@ -384,6 +421,30 @@ $(document).ready(function() {
     }
     
     
+    
+    function onCreateOrderIDCell(cell, sData, rowData, iRow, iCol)
+    {
+      if(sData == currentOrderID)
+      {
+        $(cell).parent().addClass("orderSelected");
+        
+      } 
+    }
+    
+    function onCreateOrderOptionCell(cell, sData, rowData, iRow, iCol)
+    {
+      
+      var $button = $('<a class="showOrderButton">Anzeigen</a>');
+      
+      $button.button();
+      $(cell).append($button);
+      $button.on("click",{id: rowData.id},onShowOrderButtonClick);
+    }
+    
+    function onShowOrderButtonClick(event)
+    {
+      showOrder(event.data.id);
+    }
     
     function showOrder(orderID)
     {
@@ -404,9 +465,13 @@ $(document).ready(function() {
           
           var $closeButton = $orderBox.find(".closeButton");
           
-          $closeButton.unbind("click", closeOrder);
-          $closeButton.button().click(closeOrder);
+          $closeButton.off("click", closeOrder);
+          $closeButton.button().on("click",closeOrder);
           
+          var $printButton = $orderBox.find(".printButton");
+          
+          $printButton.off("click", printOrder);
+          $printButton.button().on("click",printOrder);
           
           $order.append("<p>ID: "+orderID);
           
@@ -424,7 +489,7 @@ $(document).ready(function() {
           
           $.each(fields, function(key, label)
             {
-              $input = $('<input type="text" name="'+key+'" value="'+data[key]+'" />').keyup({orderID: orderID},onChangeOrderProperty);
+              var $input = $('<input type="text" name="'+key+'" value="'+data[key]+'" />').keyup({orderID: orderID},onChangeOrderProperty);
               $table.append($("<tr><th>"+label+": </th></tr>").append($("<td />").append($input)));
             });
           
@@ -436,14 +501,14 @@ $(document).ready(function() {
           $.each(data.articles, function(index, article)
             {
               
-              var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+(article.ext_id ? article.ext_id : "")+"</td><td>"+article.sap+"</td><td><a class='takeBackButton'>Zurücknehmen</a></td></tr>");
+              var $row = $("<tr><td>"+article.id+"</td><td>"+article.name+"</td><td>"+(article.ext_id ? article.ext_id : "")+"</td><td>"+article.sap+"</td><td><a class='takeBackButton noPrint'>Zurücknehmen</a></td></tr>");
               $row.data("article", article);
               $row.appendTo($tableBody);
             });
           
           
           
-          $table.find(".takeBackButton").button().click(function()
+          $table.find(".takeBackButton").button().on("click",function()
             {
               
               var article = $(this).parentsUntil("tr").parent().data("article");
@@ -458,6 +523,37 @@ $(document).ready(function() {
           
           
         });
+    }
+    
+    function printOrder()
+    {
+      var $copy = $("#order .ui-widget-content").clone();
+      $copy.find(".noPrint").hide();
+      
+      $copy.find("input").prop("disabled", "disabled");
+      printPopup($copy, "Auftrag");
+    }
+    
+    
+    
+    function printPopup($element, title) 
+    {
+      
+      
+      var mywindow = window.open('', 'my div', 'height=400,width=600');
+      mywindow.document.write('<html><head>');
+      mywindow.document.write('<title>'+title+'</title>');
+      mywindow.document.write('<link rel="stylesheet" href="/css/printOrder.css" />');
+      mywindow.document.write('<title>'+title+'</title>');
+      /*optional stylesheet*/ //mywindow.document.write('<link rel="stylesheet" href="main.css" type="text/css" />');
+      mywindow.document.write('</head><body >');
+      mywindow.document.write($element.html());
+      mywindow.document.write('</body></html>');
+      
+      mywindow.print();
+      mywindow.close();
+      
+      return true;
     }
     
     function onChangeOrderProperty(event)
@@ -530,14 +626,32 @@ $(document).ready(function() {
     function refreshOrderTable()
     {
       console.log("refreshing order table");
+      console.log( $("#orderTable td").length);
+      $.each($("#orderTable").dataTable().fnGetNodes(), function(index, row)
+        {
+          $(row).empty();
+        });
+      //$("#articleTable tbody td").empty();
       $("#orderTable").dataTable().fnReloadAjax();
     }
     
     
+    
     function refreshArticleTable()
     {
-      console.log("refreshing table");
-      $("#articleTable").dataTable().fnReloadAjax();
+      window.setTimeout(function()
+        {
+          console.log("refreshing table");
+          /*
+          console.log( $("#articleTable td").length);
+          $.each($("#articleTable").dataTable().fnGetNodes(), function(index, row)
+            {
+              $(row).find("*").off();
+            });
+          //$("#articleTable tbody td").empty();
+          */
+          $("#articleTable").dataTable().fnReloadAjax();
+        }, 0);
     }
     
     function addArticleToOrder(orderID, articleID, callback)
@@ -562,4 +676,8 @@ $(document).ready(function() {
         });
     }
     
+    
+    
 } );
+
+
