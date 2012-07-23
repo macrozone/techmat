@@ -66,6 +66,12 @@ module.exports = function(server, database)
           socket.broadcast.emit("order changed", {orderID: data.orderID});
         });
       
+      socket.on("order delete", function(data, callback)
+        {
+          database.deleteOrder(data.orderID, callback);
+          socket.broadcast.emit("order changed", {orderID: data.orderID});
+        });
+      
   });
 }
 

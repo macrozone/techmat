@@ -28,3 +28,12 @@ input
  margin-top: 20px; 
 }
 
+
+
+.sign
+{
+
+  margin-top: 40px;
+  border-bottom: 1px dotted #ccc;
+font-size: 1.4em;
+}

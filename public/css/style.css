@@ -9,6 +9,20 @@ body
   margin: 0px; 
 }
 
+th
+{
+ text-align: left; 
+}
+
+.printOnly
+{
+ display:none; 
+}
+
+.dataTable th
+{
+ text-align: center; 
+}
 
 #tabs
 {
@@ -51,6 +65,7 @@ table
 
 #order
 {
+  overflow: auto;
   display: none;
   margin-left: 8px;
   min-width: 328px; 

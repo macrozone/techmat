@@ -24,6 +24,10 @@ html
 
       div(id="tabs")
         div(id="actions")
+          
+          a(class="refresh") Aktualisieren
+          a(class="print") Drucken & Export
+          a(class="newArticle") Neuer Artikel
         ul 
           li
             a(href="#tab-articles") Artikel-Liste
@@ -41,7 +45,7 @@ html
           span Auftrag
             div(class="buttons")
               a(class="printButton") Drucken
-              a(class="closeButton") close
+              a(class="closeButton") Schliessen
           div(class="clear")
         div(class="ui-widget-content") 
        
@@ -50,8 +54,39 @@ html
         
     
     div(class="clear")
-  
+    div(id="printDialog")
+      table
+        tr  
+          th Alle Artikel
+          td
+             a(class="button printAll") Drucken
+          td
+             a(class="button exportAll") Export
+        tr  
+          th Vorhandene Artikel
+          td
+             a(class="button printStock") Drucken
+          td
+             a(class="button exportStock") Export
+             
+        tr  
+          th Ausgeliehene Artikel
+          td
+             a(class="button printAway") Drucken
+          td
+             a(class="button exportAway") Export
+             
+        
+      
+      
+      
+    div(id="orderNotEmptyMessage")
+      p Auftrag kann nicht gelöscht werden
+      p Bitte zuerst alle Artikel zurückgeben
     
+    div(id="orderIsEmptyMessage")
+      p Auftrag ist leer
+      p Soll der Auftrag gelöscht werden?
     div(id="addNewArticleDialog")
        form(class="addNewArticle")
         table
@@ -76,10 +111,7 @@ html
            
           
            
-          tr 
-            td 
-              input(type="submit", value="Speichern")
-    
+         
     div(id="errorDialog")
       An error occured:
       p(class="error")
