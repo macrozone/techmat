@@ -77,9 +77,7 @@ $(document).ready(function() {
     initDialogs();
     $( "#tabs" ).tabs();
     
-    
-    
-    
+  
     var articleColumns = [
       { "mDataProp": "id", "sWidth": "12px"},
       { "mDataProp": "sap" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "30px"},
@@ -122,7 +120,7 @@ $(document).ready(function() {
         
         "fnCreatedCell": onCreateOrderOptionCell,
         "sClass": "options",
-      "sWidth": "150px"}
+      "sWidth": "148px"}
       
       
       
@@ -132,10 +130,14 @@ $(document).ready(function() {
     var $orderTable = $("#orderTable");
     var oOrderTable = createOrderTable($orderTable, orderColumns);
     
-    $("#actions .refresh").button().on("click",refreshArticleTable);
+    $("#actions .refresh").button().on("click",function()
+      {
+       refreshArticleTable();
+       refreshOrderTable(); 
+      });
     $("#actions .print").button().on("click",showPrintDialog);
     $("#actions .newArticle").button().on("click",showAddArticleDialog);
-    
+    $("#actions .newOrder").button().on("click", showNewOrderForm);
     
     
     
@@ -452,7 +454,7 @@ $(document).ready(function() {
       var $header = $("<tr />").appendTo($("<thead />").appendTo($table));
       var headers = 
       [
-        "ID", "Zeit", "Wer - Person", "Wer - Unit", "Verleiher","Verleih. Einehit", "Anzahl Artikel", "Optionen"
+        "ID", "Zeit", "Wer - Person", "Wer - Unit", "Verleiher","Verleih. Einheit", "Anzahl", "Optionen"
       ];
       
       

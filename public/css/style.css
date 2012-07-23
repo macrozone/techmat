@@ -35,6 +35,14 @@ th
  top:5px;
  right:5px;
 }
+
+#actions .refresh
+{
+ background-image: url(../img/refresh.png);
+background-position: center;
+background-size: 75%;
+background-repeat: no-repeat;
+}
 .ui-widget 
 {
   
@@ -49,7 +57,8 @@ table
 
 .column
 {
-  float: left; 
+  display: table-cell;
+  vertical-align: top;
   
 }
 
@@ -104,6 +113,22 @@ table
  width: 873px; 
 }
 
+
+table.dataTable tr.odd
+{
+ background-color: #F7F7F7;
+}
+
+table.dataTable tr.even td.sorting_1
+{
+  background-color: #F7F7F7;
+}
+
+table.dataTable tr.odd td.sorting_1
+{
+  background-color: #E9E9E9;
+}
+
 #articleTable tr td input
 {
   margin: 0;
@@ -121,14 +146,14 @@ table
   padding: 3px 10px 3px 0px;
 }
 
-#articleTable tr.borrowed
+#articleTable tr.borrowed td
 {
-  background-color: red !important;
+  background-color: #FFD789 !important;
 }
 
-#articleTable tr.orderSelected, #orderTable tr.orderSelected
+#articleTable tr.orderSelected td, #orderTable tr.orderSelected td
 {
-  background-color: green !important;
+  background-color: #B4DBF3 !important;
 }
 
 

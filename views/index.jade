@@ -25,21 +25,23 @@ html
       div(id="tabs")
         div(id="actions")
           
-          a(class="refresh") Aktualisieren
+          a(class="refresh") 
+            &nbsp;
           a(class="print") Drucken & Export
-          a(class="newArticle") Neuer Artikel
+          a(class="newArticle") + Artikel
+          a(class="newOrder") + Auftrag
         ul 
           li
-            a(href="#tab-articles") Artikel-Liste
+            a(href="#tab-articles") Artikel
           li
-            a(href="#tab-orders") Auftragsliste-Liste
+            a(href="#tab-orders") Aufträge
         div(id="tab-articles")
           table(id="articleTable")
         div(id="tab-orders")
           table(id="orderTable")
           
     
-    div(class="column")
+    div(id="rightColumn", class="column")
       div(id="order", class="ui-widget")
         div(class="ui-widget-header") 
           span Auftrag
