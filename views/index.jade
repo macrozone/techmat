@@ -24,17 +24,25 @@ html
 
       div(id="tabs")
         div(id="actions")
-          
+         
           a(class="refresh") 
             &nbsp;
           a(class="print") Drucken & Export
           a(class="newArticle") + Artikel
           a(class="newOrder") + Auftrag
+       
+          
         ul 
           li
             a(href="#tab-articles") Artikel
           li
             a(href="#tab-orders") Aufträge
+            
+        div(id="status")
+         
+            span(id="numberOfClients") 
+            span &nbsp;Benutzer online
+        div(class="clear")
         div(id="tab-articles")
           table(id="articleTable")
         div(id="tab-orders")

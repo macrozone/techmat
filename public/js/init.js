@@ -13,6 +13,12 @@ jquery will automatically add theses handlers to new nodes
 
 $(document).ready(function() {
     
+    $(window).on("resize", onResize);
+    
+    function onResize()
+    {
+      $("#order .ui-widget-content").css("max-height", $(window).height()-60);
+    }
     // init socket
     var socket = io.connect(document.location.origin);
     var currentOrderID = null;
@@ -56,7 +62,16 @@ $(document).ready(function() {
       }
     };
     
+    socket.on("client connected", function(data)
+      {
+        
+        $("#numberOfClients").text(data.numberOfCients);
+      });
     
+    socket.on("client disconnected", function(data)
+      {
+        $("#numberOfClients").text(data.numberOfCients);
+      });   
     
     
     socket.on("order changed", function(data)
@@ -77,7 +92,7 @@ $(document).ready(function() {
     initDialogs();
     $( "#tabs" ).tabs();
     
-  
+    
     var articleColumns = [
       { "mDataProp": "id", "sWidth": "12px"},
       { "mDataProp": "sap" , "sClass": "editable", "fnCreatedCell": null, "sWidth": "30px"},
@@ -109,7 +124,7 @@ $(document).ready(function() {
       { "mDataProp": "itime", "fnRender":function(obj)
         {
           return formatTime(obj.aData.itime);
-       }},
+      }},
       
       { "mDataProp": "borrower"},
       { "mDataProp": "borrower_unit"},
@@ -132,8 +147,8 @@ $(document).ready(function() {
     
     $("#actions .refresh").button().on("click",function()
       {
-       refreshArticleTable();
-       refreshOrderTable(); 
+        refreshArticleTable();
+        refreshOrderTable(); 
       });
     $("#actions .print").button().on("click",showPrintDialog);
     $("#actions .newArticle").button().on("click",showAddArticleDialog);
@@ -153,10 +168,10 @@ $(document).ready(function() {
       // return date.toLocaleString();
       function addZeros(number)
       {
-       return number < 10? "0"+""+number : number; 
+        return number < 10? "0"+""+number : number; 
       }
       return addZeros(date.getDate())+"-"+ addZeros(date.getMonth()+1)+"-"+ date.getFullYear() + " "+addZeros(date.getHours()) + ":"+addZeros(date.getMinutes());
-       
+      
     }
     
     
@@ -556,7 +571,7 @@ $(document).ready(function() {
           
           
           $order.empty().show();
-          $order.css("max-height", $(window).height()-60);
+          
           
           var $closeButton = $orderBox.find(".closeButton");
           
@@ -573,7 +588,7 @@ $(document).ready(function() {
           
           var $table = $('<table/>').appendTo($order);
           $table.append("<tr><th>Zeit: </th><td>"+formatTime(data.itime)+"</td></tr>");
-         
+          
           
           var fields = {
             borrower: "Wer nimmts? - Person",
@@ -590,10 +605,10 @@ $(document).ready(function() {
             });
           
           
-           
+          
           $table = $('<table class="articleTable"/>').appendTo($order);
           
-         
+          
           $table.append("<thead><tr><th>ID</th><th>Name</th><th>Geheim-Nr.</th><th>SAP</th></tr></thead>");
           
           var $tableBody = $("<tbody />").appendTo($table);
@@ -619,7 +634,7 @@ $(document).ready(function() {
                 });
             });
           
-            $order.append("<p class='sign printOnly'>Unterschrift:</p>");
+          $order.append("<p class='sign printOnly'>Unterschrift:</p>");
           
         });
     }
@@ -628,7 +643,7 @@ $(document).ready(function() {
     {
       var $copy = $("#order .ui-widget-content").clone();
       $copy.find(".noPrint").hide();
-       $copy.find(".printOnly").show();
+      $copy.find(".printOnly").show();
       
       $copy.find("input").prop("disabled", "disabled");
       printPopup($copy, "Auftrag");

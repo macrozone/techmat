@@ -7,6 +7,7 @@
 body
 {
   margin: 0px; 
+  
 }
 
 th
@@ -69,12 +70,19 @@ table
 
 .ui-tabs .ui-tabs-panel
 {
- padding: 0.8em 0em; 
+ padding: 0em 0em; 
+}
+
+#status
+{
+  font-size: 0.9em;
+ float: right; 
+ color: #666;
 }
 
 #order
 {
-  overflow: auto;
+ 
   display: none;
   margin-left: 8px;
   min-width: 328px; 
@@ -83,6 +91,7 @@ table
 #order .ui-widget-content
 {
   padding: 8px; 
+   overflow: auto;
 }
 
 #order th

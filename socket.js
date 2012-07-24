@@ -1,11 +1,15 @@
 var socket = require('socket.io');
+var numberOfCients = 0;
 
 module.exports = function(server, database)
 {
   var io = socket.listen(server);
+ 
+  
   io.sockets.on('connection', function (socket) { 
+      numberOfCients++;
+      io.sockets.emit("client connected", {numberOfCients: numberOfCients});
       console.log("client connected");
-      
       
       
       socket.on("order get", function(orderID, callback)
@@ -72,7 +76,17 @@ module.exports = function(server, database)
           socket.broadcast.emit("order changed", {orderID: data.orderID});
         });
       
+      socket.on("disconnect", function()
+    {
+      console.log("client disconnected");
+      numberOfCients--
+      io.sockets.emit("client disconnected", {numberOfCients: numberOfCients});
+    });
+      
   });
+  
+  
+  
 }
 
 // status 0 is success
